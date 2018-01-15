@@ -75,7 +75,7 @@ We have provided the logic for sliding a tile in a given direction, encoded in a
 ```
 2 4 4 4
 ```
-Should this produce
+This should produce 
 ```
 _ 2 4 8
 ```
