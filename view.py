@@ -83,7 +83,7 @@ class GameView(object):
         """Display 'Game Over' and close after next keystroke"""
         center = graphics.Point(self.width / 2.0, self.height / 2.0)
         if score:
-            goodbye = "Game over. Your score: {}".format(score)
+            goodbye = "Game over.\nYour score: {}".format(score)
         else:
             goodbye = "Game over"
         splash = graphics.Text(center, goodbye)
