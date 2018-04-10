@@ -70,6 +70,25 @@ Most changes to game logic in model.py should also be possible without changing 
 
 ##What students must program
 
-To be determined.
+ We have provided the logic for sliding a tile in a given direction, encoded in a 'movement vector' (dx, dy), until it either reaches the edge of the grid, reaches another tile and stops, or reaches another matching tile and merges with it. Each of the four possible moves (slide left, slide right, slide up, slide down) requires triggering the slide for each tile, in the proper order. You will need to slide each tile in the proper order. Recall again that a slide right starting with
+````
+2 4 4 4
+````
+This should produce
 
- 
+````
+_ 2 4 8
+````
+and not
+````
+_ 2 8 4
+````
+
+You can earn extra credit with one or more of the following changes to make FiveTwelve more like 2048. However, extra credit is available only if all other elements of gameplay are correctly implemented. If you make one of these changes but break something else, you will lose points for what you broke and not gain credit for what you fixed. In practical terms this means that you need to use the provided test suites and add to them as needed to guard against accidentally making changes you did not intend.
+
+* Up to 5 points: Alter FiveTwelve scoring to be the same as 2048 scoring.
+* Up to 5 points: Disable ineffective moves. If the user's input does not cause any tile to move, no new tile should be generated.
+* Up to 5 points: As in 2048, a new tile should be generated with value 4 rather than value 2 with probability 0.1. (Use the Python library module 'random' to make the decision.)
+* Up to 5 ponts: Disable cascading merges: When a tile bumps into another tile of equal value and merges with it, it stops sliding.
+
+None of these changes requires much code, but they require careful study of the existing code to find the best approach to implementing the change. If you choose poorly, your code will be more complicated and it may break other parts of the program. The credit for these is labeled “Up to ... ” because full extra credit requires more than implementing the needed functionality. It is just as important that you implement it in a way that is as clean and readable and maintainable as possible. That's the hard part!
