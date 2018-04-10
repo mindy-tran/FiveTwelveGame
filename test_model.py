@@ -4,10 +4,13 @@ Tests for model.py.
 Using a DIY 'expect' function rather than the
 unittest module. Tests only the model component
 of FiveTwelve.
+
+Note that the unittest module predates PEP-8 guidelines, which
+is why we have a bunch of names that don't comply with the
+standard.
 """
 import model
 import unittest
-import sys
 
 
 class test_grid_constructor(unittest.TestCase):
@@ -90,8 +93,8 @@ class test_slide(unittest.TestCase):
         self.expect("Slide down, working from bottom up", rep,
                     [[0, 0, 0, 0],
                      [2, 2, 0, 0],
-                        [4, 8, 4, 4],
-                        [8, 2, 8, 8]])
+                     [4, 8, 4, 4],
+                     [8, 2, 8, 8]])
 
     def test_up_order(self):
         grid = model.Grid()
@@ -104,8 +107,8 @@ class test_slide(unittest.TestCase):
         self.expect("Slide up, working from top down", rep,
                     [[2, 2, 8, 8],
                      [8, 8, 4, 4],
-                        [4, 2, 0, 0],
-                        [0, 0, 0, 0]])
+                     [4, 2, 0, 0],
+                     [0, 0, 0, 0]])
 
 
 if __name__ == "__main__":

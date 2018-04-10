@@ -1,44 +1,77 @@
 """
-The game state and logic (model component) of 512,
-a game based on 2048 with a few changes.
+The game state and logic (model component) of 512, 
+a game based on 2048 with a few changes. 
 This is the 'model' part of the model-view-controller
 construction plan.  It must NOT depend on any
-particular view component, but it produces event
-notifications to trigger view updates.
+particular view component, but it produces event 
+notifications to trigger view updates. 
 """
 
 import random
+from enum import Enum
+from typing import List, Tuple, Optional
 
 # Configuration constants
 GRID_SIZE = 4
 
+# --- Interface for 'View' objects to connect and listen
 
-class Game_Element(object):
+
+class EventKind(Enum):
+    """All the kinds of events that we may notify listeners of"""
+    tile_created = 1
+    tile_updated = 2
+    tile_removed = 3
+
+
+class GameEvent(object):
+    """An event that may need to be depicted
+    """
+    def __init__(self, kind: EventKind,  tile: "Tile"):
+        self.kind = kind
+        self.tile = tile
+
+    def __repr__(self):
+        return "GameEvent({}, {})".format(self.kind, self.tile)
+
+
+class GameListener(object):
+    """Abstract base class for objects that listen to
+    game events in a model-view-controller pattern.
+    Each listener must implement a 'notify' method.
+    """
+    def notify(self, event: GameEvent):
+        raise NotImplementedError("Game Listener classes must implement 'notify'")
+
+# -------------------------------------------
+
+
+class GameElement(object):
     """Base class for game elements, especially to support
     depiction through Model-View-Controller.
     """
 
     def __init__(self):
         """Each game element can have zero or more listeners.
-        Listeners are view components that react to notificatons.
+        Listeners are view components that react to notifications.
         """
-        self.listeners = []
+        self._listeners = []
 
-    def add_listener(self, listener):
-        self.listeners.append(listener)
+    def add_listener(self, listener: GameListener):
+        self._listeners.append(listener)
 
-    def notify(self, event, data={}):
+    def notify_all(self, event: GameEvent):
         """Instead of handling graphics in the model component,
         we notify view components of each significant event and let
         the view component decide how to adjust the graphical view.
         When additional information must be packaged with an event,
         it goes in the optional 'data' parameter.
         """
-        for listener in self.listeners:
-            listener.notify(event, self, data)
+        for listener in self._listeners:
+            listener.notify(event)
 
 
-class Grid(Game_Element):
+class Grid(GameElement):
     """The game grid."""
 
     def __init__(self):
@@ -54,18 +87,20 @@ class Grid(Game_Element):
             self.tiles.append(columns)
 
     def __str__(self):
+        """String representation like list of lists"""
         rep = []
         for row in self.tiles:
             labels = [str(x) for x in row]
             rep.append("[{}]".format(",".join(labels)))
         return "[{}]".format(",".join(rep))
 
-    def in_bounds(self, row, col):
+    def in_bounds(self, row: int, col: int) -> bool:
+        """True if (row,col) are valid row and column of grid"""
         return 0 <= row < self.rows and 0 <= col < self.cols
 
-    def as_list(self):
+    def as_list(self) -> List[List[int]]:
         """Grid as a list of lists of numbers; for serialization
-        and especially for testing.
+        and especially for testing. 0 represents an empty tile.
         """
         rep = []
         for row in self.tiles:
@@ -78,10 +113,10 @@ class Grid(Game_Element):
             rep.append(value_list)
         return rep
 
-    def set_tiles(self, rep):
+    def set_tiles(self, rep: List[List[int]]):
         """Set tiles to a saved configuration, which must
         have the correct dimensions (e.g., 4 rows of 4 columns
-        if grid size is 4).
+        if grid size is 4). 0 represents an empty tile.
         """
         self.tiles = []
         for row in range(self.rows):
@@ -93,11 +128,13 @@ class Grid(Game_Element):
                     val = rep[row][col]
                     tile = Tile(self, row, col, value=val)
                     row_tiles.append(tile)
-                    self.notify("New", data={"tile": tile})
+                    self.notify_all(GameEvent(EventKind.tile_created, tile))
             self.tiles.append(row_tiles)
 
-    def score(self):
-        """The score is the total value of all tiles"""
+    def score(self) -> int:
+        """The score is the total value of all tiles.
+        Note this differs from 2048 scoring rule.
+        """
         sum = 0
         for row in self.tiles:
             for col in row:
@@ -106,7 +143,7 @@ class Grid(Game_Element):
         return sum
 
     # Game logic
-    def find_empty(self):
+    def find_empty(self) -> Optional[Tuple[int, int]]:
         """Find an empty cell (where we can drop a new tile).
         Returns a row,col pair or None to indicate there are no
         empty spots in the grid.
@@ -128,17 +165,13 @@ class Grid(Game_Element):
         chance of the new tile being 4.)
         """
         spot = self.find_empty()
-        assert(spot)
+        assert spot is not None
         row, col = spot
         tile = Tile(self, row, col)
         self.tiles[row][col] = tile
-        self.notify("New", data={"tile": tile})
+        self.notify_all(GameEvent(EventKind.tile_created, tile))
 
-    # Game moves.  Calls the "slide" method on each tile in the
-    # grid, with the correct motion vector, and in the correct
-    # order.  See game rules in README for more about the order
-    # in which tiles must slide.
-    #
+    # Game moves
     def left(self):
         """Slide tiles to the left"""
         # FIXME
@@ -160,22 +193,27 @@ class Grid(Game_Element):
         pass
 
 
-class Tile(Game_Element):
+class Tile(GameElement):
     """A slidy numbered thing."""
 
-    def __init__(self, grid, row, col, value=2):
+    def __init__(self, grid: Grid, row: int, col: int, value=2):
         super().__init__()
         self.grid = grid
         self.row = row
         self.col = col
         self.value = value
 
-    def slide(self, grid, movement_vector):
+    def __repr__(self):
+        """Not like constructor --- more useful for debugging"""
+        return "Tile({}) at {},{}".format(self.value, self.row, self.col)
+
+    def __str__(self):
+        return str(self.value)
+
+    def slide(self, movement_vector: Tuple[int, int]):
         """Slide the tile in given direction
         Note we must update grid as well as
-        tile. Movement vector should be a
-        pair (dx, dy) where each of dx, dy is
-        -1, 0, or 1.  For example, left is (-1, 0).
+        tile.
         """
         dx, dy = movement_vector
         row, col = self.row, self.col
@@ -204,16 +242,14 @@ class Tile(Game_Element):
         self.row = row
         self.col = col
         self.grid.tiles[row][col] = self
-        self.notify("Update")
+        self.notify_all(GameEvent(EventKind.tile_updated, self))
 
     def merge(self, other):
-        """Let this tile be the sum of it and another"""
+        """This tile absorbs other tile"""
         self.value = self.value + other.value
         other.remove()
-        self.notify("Update")
+        self.notify_all(GameEvent(EventKind.tile_updated, self))
 
     def remove(self):
-        self.notify("Remove")
+        self.notify_all(GameEvent(EventKind.tile_removed, self))
 
-    def __str__(self):
-        return str(self.value)

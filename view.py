@@ -9,12 +9,13 @@ wanted to provide more configurability.
 import graphics.graphics as graphics
 import time
 import model
+from typing import Tuple
 
 ##########################
 # Configuration constants
 #########################
 
-WIN_TITLE = "512"
+WIN_TITLE = "Five Twelve"
 WIN_HEIGHT = 800
 WIN_WIDTH = 800
 MARGIN = WIN_HEIGHT * 0.04  # around each cell
@@ -35,7 +36,7 @@ RAMP = {2: '#fff5f0', 4: '#fff5f0',
         1024: '#a50f15',
         2048: '#67000d',
         # If anyone gets farther, we use the same color
-        4096: '#67000d', 8192: '#67000d', 16384: '#67000d',
+        4096: '#67000d',  8192: '#67000d', 16384: '#67000d',
         # I'm prepared to gamble that nobody can reach 2^16
         32768: "#ff0000", 65536: "#ff0000"
         }
@@ -48,6 +49,12 @@ ANIMATION_TIME = 0.05
 # End configuration constants
 ######
 
+# Events we need to respond to:
+#   - A new tile has been created.  Draw it and listen to it.
+#   - A tile has been removed (maybe swallowed by another).
+#   - A tile has been updated. Update its position and/or value.
+#
+
 
 class GameView(object):
     """The overall view (game window)"""
@@ -58,7 +65,7 @@ class GameView(object):
         self.width = width
         self.win = graphics.GraphWin(WIN_TITLE, width, height)
 
-    def getKey(self):
+    def get_key(self) -> str:
         """Acquire a single keystroke as a string,
         e.g., "e" for the "e" key.  Some keys are
         encoded as strings, e.g., "Left" for the left
@@ -84,16 +91,16 @@ class GameView(object):
         splash.setSize(36)  # The largest font size supported by graphics.py
         splash.setTextColor("red")
         splash.draw(self.win)
-        self.getKey()
+        self.get_key()
         self.close()
 
 
-class GameGrid(object):
+class GridView(model.GameListener):
     """The grid of spaces in the game, displayed
     within a GameView.
     """
 
-    def __init__(self, game, grid_size):
+    def __init__(self, game: GameView, grid_size: int):
         """Square grid, with a little space
         around the tiles.
         Args:
@@ -110,7 +117,7 @@ class GameGrid(object):
         self.cell_height = (game.height - MARGIN) / grid_size
         self.tile_height = self.cell_height - MARGIN
         self.tiles = []
-        # Intially empty tile spaces
+        # Initially empty tile spaces
         for row in range(grid_size):
             row_tiles = []
             for col in range(grid_size):
@@ -122,7 +129,7 @@ class GameGrid(object):
                 row_tiles.append(tile_background)
             self.tiles.append(row_tiles)
 
-    def tile_corners(self, row, col):
+    def tile_corners(self, row: int, col: int) -> Tuple[graphics.Point, graphics.Point]:
         """upper left and lower right corners of tile at row,col"""
         ul_x = MARGIN + col * self.cell_width
         lr_x = ul_x + self.tile_width
@@ -132,40 +139,45 @@ class GameGrid(object):
         lr = graphics.Point(lr_x, lr_y)
         return ul, lr
 
-    def notify(self, event, model, data={}):
-        if event == "New":
-            tile = data["tile"]
-            row = tile.row
-            col = tile.col
-            tile.add_listener(Tile(self, row, col, value=tile.value))
+    def notify(self, event: model.GameEvent):
+        """When a tile is created, we attach a new TileView
+        to draw and redraw it as needed.
+        """
+        if event.kind == model.EventKind.tile_created:
+            view = TileView(self, event.tile)
+            event.tile.add_listener(view)
         else:
             raise Exception("Unexpected event: {}".format(event))
 
 
-class Tile(object):
-    """A tile is the thing with a number that slides around the grid"""
+class TileView(object):
+    """A Tile is the thing with a number that slides around the grid.
+    A TileView is its graphic depiction.  The TileView object listens
+    for events from the underlying Tile, and updates the depiction as
+    needed.
+    """
 
-    def __init__(self, grid, row, col, value=2):
+    def __init__(self, grid: GridView, tile: model.Tile):
         """Display the tile on the grid.
         Internally there are actually two graphics objects:
         A background rectangle and text within it. The
         background rectangle has a visible outline until
         the first time it moves.
         """
-        self.win = grid.win
         self.grid = grid
-        self.row = row
-        self.col = col
-        self.value = value
-        ul, lr = grid.tile_corners(row, col)
+        self.win = grid.win
+        self.row = tile.row
+        self.col = tile.col
+        self.value = tile.value
+        ul, lr = grid.tile_corners(self.row, self.col)
         background = graphics.Rectangle(ul, lr)
-        background.setFill(RAMP[value])
+        background.setFill(RAMP[self.value])
         background.setOutline(TILE_OUTLINE_NEW)
         self.background = background
         cx = (ul.getX() + lr.getX()) / 2.0
         cy = (ul.getY() + lr.getY()) / 2.0
         center = graphics.Point(cx, cy)
-        label = graphics.Text(center, str(value))
+        label = graphics.Text(center, str(self.value))
         label.setSize(36)
         self.label = label
         background.draw(self.win)
@@ -185,23 +197,19 @@ class Tile(object):
             self.label.move(dx, dy)
             time.sleep(step_sleep)
 
-    def notify(self, event, element, data={}):
+    def notify(self, event: model.GameEvent):
         """Receive notification of change from a tile.
-        Args:
-           event: currently "Update" or "Remove"
-           element: the model Tile object
-           data:  reserved for future use
         """
-        assert isinstance(element, model.Tile)
-        if event == "Update":
-            row, col = element.row, element.col
+        if event.kind == model.EventKind.tile_updated:
+            row, col = event.tile.row, event.tile.col
             if self.row != row or self.col != col:
                 self.slide_to(row, col)
-            if self.value != element.value:
-                self.value = element.value
-                self.background.setFill(RAMP[element.value])
-                self.label.setText(str(element.value))
-        elif event == "Remove":
+            if self.value != event.tile.value:
+                self.value = event.tile.value
+                tile_color = RAMP[event.tile.value]
+                self.background.setFill(tile_color)
+                self.label.setText(str(event.tile.value))
+        elif event.kind == model.EventKind.tile_removed:
             self.label.undraw()
             self.background.undraw()
         else:
@@ -210,7 +218,7 @@ class Tile(object):
 
 if __name__ == "__main__":
     game_view = GameView(600, 600)
-    grid_view = GameGrid(game_view)
+    grid_view = GridView(game_view, 4)
     grid = model.Grid()
     grid.add_listener(grid_view)
     grid.place_tile()

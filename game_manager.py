@@ -5,7 +5,7 @@ functionality by interpreting keyboard input
 """
 import model
 import view
-import keypress
+import keypress 
 
 
 def main():
@@ -13,7 +13,7 @@ def main():
     grid = model.Grid()
     # Set up view component
     game_view = view.GameView(600, 600)
-    grid_view = view.GameGrid(game_view, len(grid.tiles))
+    grid_view = view.GridView(game_view, len(grid.tiles))
     grid.add_listener(grid_view)
     # Handle control component responsibility here
     commands = keypress.Command(game_view)
@@ -32,7 +32,7 @@ def main():
             grid.up()
         elif cmd == keypress.DOWN:
             grid.down()
-        else:
+        else: 
             assert cmd == keypress.UNMAPPED
 
     game_view.lose(grid.score())
