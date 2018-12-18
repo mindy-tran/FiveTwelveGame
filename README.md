@@ -76,6 +76,8 @@ and not
 _ 2 8 4
 ````
 
+### Extra credit 
+
 You can earn extra credit with one or more of the following changes to make FiveTwelve more like 2048. However, extra credit is available only if all other elements of gameplay are correctly implemented. If you make one of these changes but break something else, you will lose points for what you broke and not gain credit for what you fixed. In practical terms this means that you need to use the provided test suites and add to them as needed to guard against accidentally making changes you did not intend.
 
 * Up to 5 points: Alter FiveTwelve scoring to be the same as 2048 scoring.

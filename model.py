@@ -218,8 +218,8 @@ class Tile(GameElement):
         dx, dy = movement_vector
         row, col = self.row, self.col
         while True:
-            trial_x = row + dx
-            trial_y = col + dy
+            trial_x = row + dy
+            trial_y = col + dx
             if not self.grid.in_bounds(trial_x, trial_y):
                 # Reached edge of board
                 break
