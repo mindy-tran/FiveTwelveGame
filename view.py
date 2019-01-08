@@ -8,6 +8,7 @@ wanted to provide more configurability.
 
 import graphics.graphics as graphics
 import time
+import game_element
 import model
 from typing import Tuple
 
@@ -91,11 +92,15 @@ class GameView(object):
         splash.setSize(36)  # The largest font size supported by graphics.py
         splash.setTextColor("red")
         splash.draw(self.win)
-        self.get_key()
-        self.close()
+        try:
+            self.get_key()
+            self.close()
+        except graphics.GraphicsError as e:
+            # This happens when the close button is pressed.
+            pass
 
 
-class GridView(model.GameListener):
+class GridView(game_element.GameListener):
     """The grid of spaces in the game, displayed
     within a GameView.
     """
@@ -139,11 +144,11 @@ class GridView(model.GameListener):
         lr = graphics.Point(lr_x, lr_y)
         return ul, lr
 
-    def notify(self, event: model.GameEvent):
+    def notify(self, event: game_element.GameEvent):
         """When a tile is created, we attach a new TileView
         to draw and redraw it as needed.
         """
-        if event.kind == model.EventKind.tile_created:
+        if event.kind == game_element.EventKind.tile_created:
             view = TileView(self, event.tile)
             event.tile.add_listener(view)
         else:
@@ -197,10 +202,10 @@ class TileView(object):
             self.label.move(dx, dy)
             time.sleep(step_sleep)
 
-    def notify(self, event: model.GameEvent):
+    def notify(self, event: game_element.GameEvent):
         """Receive notification of change from a tile.
         """
-        if event.kind == model.EventKind.tile_updated:
+        if event.kind == game_element.EventKind.tile_updated:
             row, col = event.tile.row, event.tile.col
             if self.row != row or self.col != col:
                 self.slide_to(row, col)
@@ -209,7 +214,7 @@ class TileView(object):
                 tile_color = RAMP[event.tile.value]
                 self.background.setFill(tile_color)
                 self.label.setText(str(event.tile.value))
-        elif event.kind == model.EventKind.tile_removed:
+        elif event.kind == game_element.EventKind.tile_removed:
             self.label.undraw()
             self.background.undraw()
         else:
@@ -219,7 +224,7 @@ class TileView(object):
 if __name__ == "__main__":
     game_view = GameView(600, 600)
     grid_view = GridView(game_view, 4)
-    grid = model.Grid()
+    grid = model.Board()
     grid.add_listener(grid_view)
     grid.place_tile()
     game_view.lose()

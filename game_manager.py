@@ -5,23 +5,26 @@ functionality by interpreting keyboard input
 """
 import model
 import view
-import keypress 
+import keypress
+import sys
 
 
 def main():
     # Set up model component
-    grid = model.Grid()
+    grid = model.Board()
     # Set up view component
     game_view = view.GameView(600, 600)
     grid_view = view.GridView(game_view, len(grid.tiles))
     grid.add_listener(grid_view)
     # Handle control component responsibility here
     commands = keypress.Command(game_view)
-    grid.place_tile()
+
+    # First tile will always be a 2; second might be a 4
+    grid.place_tile(value=2)
 
     # Game continues until there is no empty
     # space for a tile
-    while grid.find_empty():
+    while grid.has_empty():
         grid.place_tile()
         cmd = commands.next()
         if cmd == keypress.LEFT:
@@ -32,6 +35,10 @@ def main():
             grid.up()
         elif cmd == keypress.DOWN:
             grid.down()
+        elif cmd == keypress.CLOSE:
+            # Ended game by closing window
+            print(f"Your score: {grid.score()}")
+            sys.exit(0)
         else: 
             assert cmd == keypress.UNMAPPED
 
