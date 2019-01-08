@@ -19,8 +19,10 @@ def main():
     # Handle control component responsibility here
     commands = keypress.Command(game_view)
 
-    # First tile will always be a 2; second might be a 4
-    grid.place_tile(value=2)
+    # FIXME: We will change this to 
+    #  grid.place_tile(value=2) after
+    #  creating the keyword argument in model.py
+    grid.place_tile()
 
     # Game continues until there is no empty
     # space for a tile
