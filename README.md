@@ -1,4 +1,4 @@
-#FiveTwelve
+# FiveTwelve
 
 FiveTwelve is a sliding tile game based on 2048, with a few changes.  2048 was itself based on an earlier game called 1024, which (so legend says) was inspired by an earlier sliding tile game.  
 
@@ -25,7 +25,7 @@ _ 2 4 8
 
 After each move, a new tile with value 2 is placed in a random open square on the grid.  When there is no open square to place the new tile, the game is over and the player's score is the sum of all tiles on the board.  
 
-##Differences from 2048
+## Differences from 2048
 
 The game play should be familiar to those who have played 2048, but there are a few differences. 
 
@@ -57,7 +57,7 @@ The player may choose to slide the tiles right, but no tile can move farther to 
 ##Known bugs and limitations
 * You must click the FiveTwelve window with a pointing device to send keystrokes to the game.  
 
-##Implementation notes: MVC
+## Implementation notes: MVC
 
 FiveTwelve follows a Model-View-Controller (MVC) organization or *design pattern*.   The model component (model.py) contains all the game logic and data structures.  The model component has no direct dependencies on the view or controller components, but each element of the model component permits registration of *listeners* and announces significant events to its listeners.
 
@@ -71,7 +71,7 @@ The current view component uses Zelle's graphics module (graphics/graphics.py), 
 
 Most changes to game logic in model.py should also be possible without changing view.py. For example, adopting the 2048 rule regarding merging (only one merge per tile per move) should require no change to view.py.  Adopting the 2048 rule regarding ineffective moves would require small changes to model.py and controller.py but no change to view.py or keypress.py.  This independence is the point of MVC organization. 
 
-##What students must program
+## What students must program
 
 Although there is a lot of code to add to the skeleton, a fair amount of it is given to 
 you in ```doc/Development-order.md```.  The main thing you have to design 
