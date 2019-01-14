@@ -74,5 +74,5 @@ Most changes to game logic in model.py should also be possible without changing 
 ##What students must program
 
 Although there is a lot of code to add to the skeleton, a fair amount of it is given to 
-you in ```doc/Development-order.md```.  The main thing you have to design 
+you in [the HOWTO document](doc/HOWTO.md).  The main thing you have to design 
 on your own are the loops that move each tile in turn, in the correct order. 
