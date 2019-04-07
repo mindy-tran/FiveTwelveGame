@@ -1,6 +1,10 @@
 # FiveTwelve
 
-FiveTwelve is a sliding tile game based on 2048, with a few changes.  2048 was itself based on an earlier game called 1024, which (so legend says) was inspired by an earlier sliding tile game.  
+FiveTwelve is a sliding tile game based on 2048, 
+with a few changes.  2048 was itself based on an 
+earlier game called 1024, which 
+was inspired by the more challenging 
+sliding tile game Threes.  
 
 ##Game Play
 

@@ -955,8 +955,7 @@ The first method, ```Tile.move```, will actually do only part of the job. It
 will update it's own coordinates and notify any listeners that it has changed; 
 this will trigger a display update if ```view.TileView``` object has been 
 attached as a listener.  (This is why we bother to keep coordinates in the 
-Tile object.)  But updating the ```tiles``` list in the board will be done 
-directly in ```Board.slide```. 
+by calling `_move_tile` in ```Board.slide```. 
 
 What kind of loop can we use? It isn't obvious how to make a ```for``` loop 
 work here, or how to use any reasonably simple condition in a ```while``` loop to
@@ -986,7 +985,35 @@ with ```break``` statements for the cases that should exit the loop.
                 # Stuck against another tile
                 break
             pos = new_pos
-```           
+```  
+
+### Aside: "==" vs "is"
+
+You may notice in the above code that we check for an empty space 
+with 
+
+```python
+if value is None:
+```
+
+and not with 
+
+```python
+if value == None:
+```
+
+As we have discussed, `x == y` is interpreted as `x.__eq__(y)`.  
+And most of the time that is a very good thing, as it allows us 
+to define a custom `==` for each type of data. 
+But sometimes that is not what we want.  
+The __eq__ method of Tile assumes the "other" argument is also 
+a Tile, this will fail.  It will try to treat the `None` object as 
+a Tile object, which it isn't.   In this case we don't want the 
+magic.  We just want to ask whether 
+`self.tiles[row][col]` is the very same object as `None`.  
+(There is only one `None` object in the whole Python universe.)
+         
+## Factoring out movement
    
 Notice that the case for moving onto an empty space and the logic for 
 moving onto a space occupied by a tile with the same value are nearly the same. 
@@ -1212,6 +1239,14 @@ I suggest you start by writing separate ```left```, ```right```, ```up```,
 methods.  Test to be sure these work correctly.  Then see if you can write 
 a general ```_move``` method, changing each of ```left```, ```right```, etc. 
 to methods that just call ```_move``` with different arguments. 
+
+_Combining the movement logic of  ```left```, ```right```, ```up```, 
+and ```down``` methods 
+into into one general ```_move``` method is optional and should only 
+be attempted when you have everything else working.  Students in winter 
+term found this part of the project quite challenging and many got stuck 
+on it. Leave it for last, and consider turning in a working version 
+of your project before you try it!_
 
 What should the arguments to ```_move``` be?  It needs to know: 
 
