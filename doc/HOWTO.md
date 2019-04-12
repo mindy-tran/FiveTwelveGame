@@ -651,7 +651,7 @@ that notification to the ```place_tile``` method:
         empties = self._empty_positions()
         assert len(empties) > 0
         choice = random.choice(empties)
-        row, col = choice
+        row, col = choice.x, choice.y
         if value is None:
             # 0.1 probability of 4
             if random.random() < 0.1:
@@ -728,7 +728,7 @@ While the ```_str_``` and ```_repr_``` methods for class ```Tile``` help with
 informal manual testing and trouble-shooting, they still are not enough for writing 
 good automated test cases.  We need a representation of a board that is easy to 
 compare.  A simple list of lists of integers would do.  We'll add a ```to_list``` 
-method to the ```Tile``` class: 
+method to the ```Board``` class: 
 
 ```python
     def to_list(self) -> List[List[int]]:
