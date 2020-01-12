@@ -57,7 +57,7 @@ in which "listeners" can be dynamically attached to the "model".
 The "model" must notify all the listeners of events, but 
 then it is up to the listeners (which belong to 
 the "view" component) to update the display.  The basic 
-skeleton for this is provided in "game_element". 
+skeleton for this is provided in "game_element.py". 
 "game_element" defines what an *event* is (class 
 ```GameEvent```), what a *listener* is (class ```GameListener```), 
 and what a *game element* is (class ```GameElement```). 
@@ -67,6 +67,10 @@ whole point of this organization).  The game elements
 are what we will define in the "model" component.  
 We will have two kinds of game elements, the 
 ```Board``` and the individual ```Tile```s on the board. 
+
+![A `Board` contains `Tile` objects. `Board` and `Tile` 
+instantiate the `GameElement` abstract base class.
+](img/GameElement-instantiate.svg)
 
 ### The Board Class 
 
@@ -87,7 +91,7 @@ class Board(GameElement):
 We imported GameEvent as well as GameElement because 
 we will "notify" listener objects when an interesting 
 game event occurs.  The listener objects (defined 
-in ```view.py``) will be responsible 
+in `view.py`) will be responsible 
 for updating the display. 
 
 The ```__init__``` method of ```GameElement``` performs
@@ -106,7 +110,7 @@ Python for referring to a method in the "superclass" of a class.
 ```
 
 The game manager and view component expect the 
-Board object to contain an list of lists of tiles.
+Board object to contain a list of lists of tiles.
 Soon we will need to initialize that properly, but for 
 now we'll just leave a stub definition, so our first 
 cut at the constructor (the ```__init__``` method) is
@@ -118,7 +122,8 @@ cut at the constructor (the ```__init__``` method) is
 ```
 
 If you are using PyCharm, you may notice that PyCharm uses a 
-special color for the FIXME comment. 
+special color for the FIXME comment.  TODO comments 
+are also highlighted.  
 
 We need a few more pieces to get started.  The game manager 
 needs a way to determine whether there is at least one 
@@ -220,7 +225,7 @@ Sometimes we will write some code and then write test cases for that
 code, and sometimes we will write the test cases first and then code 
 to satisfy the test cases. 
 
-The ```test_model.py``` is where our test cases live.  It uses the 
+The file ```test_model.py``` is where our test cases live.  It uses the 
 Python ```unittest``` framework. 
 
 ```python
@@ -229,7 +234,7 @@ import unittest
 ```
 
 We create a couple of simple test cases to make sure we didn't mess 
-up the constructor, the ``__eq__`` moethod, or the ```__add__``` 
+up the constructor, the ``__eq__`` method, or the ```__add__``` 
 method. 
 
 ```python
@@ -294,7 +299,7 @@ it will need a little more than that.  In the game
 we will slide the tiles around on the board, so we can 
 surmise that part of the state of a ```Tile``` object 
 is its position (row and column index) on the board. We might 
-guess that it's constructor (```__init__`` method) should look 
+guess that it's constructor (`__init__` method) should look 
 something like this: 
 
 ```python
@@ -311,7 +316,7 @@ this logic be in the ```Board``` class or the ```Tile``` class?  If the
 logic for "bumping into" another ```Tile``` is in the ```Tile``` class, then 
 a ```Tile``` object might need to hold another value:  It would need 
 to know the ```Board``` it belongs to, so that it can check for the 
-presence of another ```Tile``` at a certain position in the ```Boaard```. 
+presence of another ```Tile``` at a certain position in the ```Board```. 
 We might have to add this later.  On the other hand, perhaps this logic
 belongs in the ```Board``` class anyway, in which case we might not need
 it here.  We will make a tentative decision to keep the ```Tile``` object as 
@@ -321,7 +326,7 @@ if it causes the logic in ```Board``` to be unnecessarily complicated.
 ### Constructing the Board
 
 Now that we have some state in the ```Tile``` objects, we can make some 
-progress in designing the ```Board``` class.  The state of a ```Board``` 
+progress designing the ```Board``` class.  The state of a ```Board``` 
 must clearly consist of rows and columns of positions that are either 
 empty or contain a ```Tile```.  A list of lists is a natural way to 
 represent the rows and columns.  Occupied positions should obviously 
@@ -331,7 +336,7 @@ or we could use the Python value ```None```.  It isn't obvious which
 approach is better, so we'll tentative choose to use the ```None``` value
 for unoccupied positions. 
 
-We will need to place a couple of tiles on the initial board.  Should we do 
+We will need to place a couple tiles on the initial board.  Should we do 
 that as part of the constructor?  Or should that be separate?   How should we 
 decide? We will definitely need a separate function for placing a tile in a 
 random position before each turn.  There is no compelling reason to repeat
@@ -436,10 +441,10 @@ but it is rather verbose.  Recall how we used *magic methods* to define
 operations like ```<``` and ```==```?  We can do the same thing 
 for accessing collection elements.  We can define a ```[]``` operation 
 to allow us to shorten the above to 
-```python
-tile = board[pos]
-```
+`tile = board[pos]`
+
 Here are the magic methods we need: 
+
 ```python
     def __getitem__(self, pos: Vec) -> Tile:
         return self.tiles[pos.x][pos.y]
@@ -654,7 +659,7 @@ that notification to the ```place_tile``` method:
         row, col = choice.x, choice.y
         if value is None:
             # 0.1 probability of 4
-            if random.random() < 0.1:
+            if random.random() > 0.1:
                 value = 4
             else:
                 value = 2
@@ -667,6 +672,9 @@ At this point, if we run the ```game_manager.py``` program, we can at least
 see an initial screen: 
 
 ![Initial screen](img/initial.png)
+
+If you have not fixed the bug, you will 
+likely see more tiles with value 4. 
 
 ### Better test support 
 
@@ -898,7 +906,7 @@ If all is well, this test should also pass.
 We are ready to write a method to slide one tile in a given direction until 
 it either bumps into another tile or reaches the edge of the board.  In fact, 
 we might as well write this to take a (row, column) position and a direction
-vector as arguments, both represented as ```Vec`` objects.  
+vector as arguments, both represented as `Vec` objects.  
 If the starting position is empty, it will do nothing. 
 
 Should ```slide``` be a method of the ```Board``` class or a method of the ```Tile``` 
@@ -912,7 +920,7 @@ probably better to keep the logic of sliding in the ```Board``` object.  The
 just for operations that do not require the ```Tile``` object 
  to access the ```Board``` object.
  
-The signature of the ```slide``` method can look like this: 
+The signature of the `slide` method of the `Board` class can look like this: 
 ```python
     def slide(self, pos: Vec,  dir: Vec):
         """Slide tile at pos.x, pos.y (if any)
@@ -955,7 +963,8 @@ The first method, ```Tile.move```, will actually do only part of the job. It
 will update it's own coordinates and notify any listeners that it has changed; 
 this will trigger a display update if ```view.TileView``` object has been 
 attached as a listener.  (This is why we bother to keep coordinates in the 
-by calling `_move_tile` in ```Board.slide```. 
+`Tile` object.)  We'll control which tile moves, and 
+where, by calling `_move_tile` in ```Board.slide```. 
 
 What kind of loop can we use? It isn't obvious how to make a ```for``` loop 
 work here, or how to use any reasonably simple condition in a ```while``` loop to
@@ -1007,7 +1016,10 @@ And most of the time that is a very good thing, as it allows us
 to define a custom `==` for each type of data. 
 But sometimes that is not what we want.  
 The __eq__ method of Tile assumes the "other" argument is also 
-a Tile, this will fail.  It will try to treat the `None` object as 
+a Tile.  If `t` is a `Tile` object, then 
+`t == None` will fail (although we could modify the `__eq__` 
+method to fix it). 
+  It will try to treat the `None` object as 
 a Tile object, which it isn't.   In this case we don't want the 
 magic.  We just want to ask whether 
 `self.tiles[row][col]` is the very same object as `None`.  
@@ -1017,7 +1029,7 @@ magic.  We just want to ask whether
    
 Notice that the case for moving onto an empty space and the logic for 
 moving onto a space occupied by a tile with the same value are nearly the same. 
-We can *factor out* that logic into a separate method: 
+We can *factor out* that logic into a separate method of `Board`: 
 
 ```python
     def _move_tile(self, old_pos: Vec, new_pos: Vec):
@@ -1221,11 +1233,22 @@ it is natural to ask whether we can factor out the common parts.
 ### Game moves: Right, Left, Up, Down
 
 The provided ```game_manager.py``` already calls the ```right```, ```left```, ```up```, 
-and ```down``` methods; you must write those methods.  You can complete the 
-project and make a playable game writing completely separate code for each 
-direction.  But you can do better.  Apply the *DRY*  (Don't Repeat Yourself)
-principle by devising a single internal method ```_move``` that is called by
-```left```, ```right```, ```up```, and ```down```.   
+and ```down``` methods; you must write those methods.  
+I suggest you start by writing separate ```left```, ```right```, ```up```,
+ and ```down``` 
+methods.  Test to be sure these work correctly.  Only when you 
+are certain those are working correctly, consider the 
+following optional step of *DRY*ing your code out a little farther. 
+
+### Putting Right, Left, Up, and Down through the *DRY*er
+
+This step is optional!  Once you have the rest of the game 
+working correctly, see if you can 
+apply the *DRY* principle (Don't Repeat Yourself) 
+with a little more force.  
+Write 
+a general ```_move``` method, changing each of ```left```, ```right```, etc. 
+to methods that just call ```_move``` with different arguments. 
 
 When we want to write something general, it is often useful to first write 
 one or sometimes two or three specific examples, and then consider how to
@@ -1234,19 +1257,11 @@ we apply the *DRY* principle by finding how to condense the repeated code
 into a more general version.  *DRY* doesn't always mean we *write* less 
 code.  Often we *write* more and only  *end up with* less! 
   
-I suggest you start by writing separate ```left```, ```right```, ```up```,
- and ```down``` 
-methods.  Test to be sure these work correctly.  Then see if you can write 
-a general ```_move``` method, changing each of ```left```, ```right```, etc. 
-to methods that just call ```_move``` with different arguments. 
-
-_Combining the movement logic of  ```left```, ```right```, ```up```, 
-and ```down``` methods 
-into into one general ```_move``` method is optional and should only 
-be attempted when you have everything else working.  Students in winter 
-term found this part of the project quite challenging and many got stuck 
+Students in prior
+terms found this part of the project quite challenging and many got stuck 
 on it. Leave it for last, and consider turning in a working version 
-of your project before you try it!_
+of your project before you try it! Also, save a copy of your 
+working program so that you can revert to it if you get stuck. 
 
 What should the arguments to ```_move``` be?  It needs to know: 
 
@@ -1265,7 +1280,7 @@ direction for choosing next tile, and direction for choosing next row or column)
 It was hideous.  Implementing ```Vec``` cut the number of arguments in half, 
 and gave me clearer names and fewer of them.  Using ```Vec```
 consistently throughout the file was a little tedious but straightforward, 
-and the test module (which also needed to be converted to use ```Vec``) made it
+and the test module (which also needed to be converted to use ```Vec```) made it
 easy to make sure I made the right changes everywhere they were needed.)_
 
 ### Testing moves
@@ -1414,3 +1429,4 @@ the ```score``` method of ```Board```.  Revise it so that it sums the
 elements on the board.   It's easy to write a test case for this: 
 
 ![There's my score](img/Game-with-score.png)
+![]()
