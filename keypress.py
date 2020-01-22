@@ -9,6 +9,9 @@ we would need to use curses functions to obtain keystrokes.
 
 """
 
+import sys
+import graphics
+
 # Internal codes for commands. 
 
 LEFT = "Left"
@@ -16,6 +19,7 @@ RIGHT = "Right"
 UP = "Up"
 DOWN = "Down"
 UNMAPPED = "Unmapped"
+CLOSE = "Close"    # When the window is closed
 
 
 # We can bind different areas of the keyboard to the
@@ -43,9 +47,16 @@ class Command(object):
         self.game_view = game_view
 
     def next(self):
-        key = self.game_view.get_key()
-        if key not in KEY_BINDINGS:
-            return UNMAPPED
-        else:
-            return KEY_BINDINGS[key]
+        try:
+            key = self.game_view.get_key()
+            if key not in KEY_BINDINGS:
+                return UNMAPPED
+            else:
+                return KEY_BINDINGS[key]
+        except graphics.graphics.GraphicsError as e:
+            # This happens when the close button is pressed.
+            if self.game_view.win.isClosed():
+                return CLOSE
+            raise e
+
 
