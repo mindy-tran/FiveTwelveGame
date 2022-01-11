@@ -566,7 +566,7 @@ We might first be inclined to write the search loop using list iterators:
 ```
 
 Unfortunately, if we write the loop that way, we have access to the item but
-we don't have the (row, column) inexes that we need.  So, you'll have to write
+we don't have the (row, column) indices that we need.  So, you'll have to write
 the loop using the ```range``` and ```len``` functions:
 
 ```python
