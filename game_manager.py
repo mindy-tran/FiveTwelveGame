@@ -22,7 +22,7 @@ def main():
     # FIXME: We will change this to 
     #  grid.place_tile(value=2) after
     #  creating the keyword argument in model.py
-    grid.place_tile()
+    grid.place_tile(2)
 
     # Game continues until there is no empty
     # space for a tile
